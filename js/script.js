@@ -1,87 +1,146 @@
+
+var success = "linear-gradient(to right, #00b09b, #96c93d)";
+var danger = "linear-gradient(to right, #b01a00, #a65446)";
+
+//notification Function
+function notification(msg, color) {
+    Toastify({
+        text: msg,
+        duration: 3000,
+        destination: "https://github.com/apvarun/toastify-js",
+        newWindow: true,
+        close: true,
+        gravity: "bottom", // `top` or `bottom`
+        position: "left", // `left`, `center` or `right`
+        stopOnFocus: true, // Prevents dismissing of toast on hover
+        style: {
+            background: color
+        },
+        onClick: function () { } // Callback after click
+    }).showToast();
+}
+
+document.getElementById('output').innerHTML = '';
+
+function output(result) {
+    return document.getElementById('output').innerHTML = result;
+}
+
+function clear() {
+    return document.getElementById('output').innerHTML = '';
+}
+
 function clearOutput() {
-    document.getElementById("output").innerHTML = ""
+    let outputBox = document.getElementById('output').innerHTML;
+    if (!outputBox.length) {
+        return notification(" Output is already empty", danger);
+    }
+    else {
+        clear();
+        notification(" Output has been cleared", success);
+    }
+
 }
 
-function getFieldValue(Id) {
-    return document.getElementById(Id).value;
+function getFieldValue(ID) {
+    return document.getElementById(ID).value;
 }
+// Email Validator
+var emailValidation = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
-function randomId(randomId) {
-    return MathMLElement.random().toString(36).slice(2)
+
+function getRandomId() {
+    return Math.random().toString(36).slice(2);
 }
-
-let emailFormate = /^([a-zA-Z0-9_\.\])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-// -------------------------------------------------------------------------------------------------------------------------
-
-let users = [];
-function user(firstName, lastName, email, dob, status, role) {
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.email = email;
-    this.dateCreated = new date().getTime();
-    this.dob = dob;
-    this.status = "Active";
-    this.role = "Student";
-    this.Id = randomId();
+// Age Calculator
+function ageYear() {
+    let dob = getFieldValue("dob");
+    dob = new Date(dob);
+    let currentDate = new Date();
+    let month_diff = currentDate.getTime() - dob.getTime();
+    let age_dt = new Date(month_diff);
+    let year = age_dt.getFullYear();
+    let age = Math.abs(year - 1970);
+    return age + " years";
 }
+var users = [];
 
-
-
-
-function submit() {
-
+function handleSubmit() {
+    event.preventDefault();
 
     let firstName = getFieldValue("firstName");
     let lastName = getFieldValue("lastName");
-    let emial = getFieldValue("emial");
+
+    let email = getFieldValue("email");
     let dob = getFieldValue("dob");
-    firstName = firstName.trim()
-    lastName = lastName.trim()
 
+    firstName = firstName.trim();
+    firstName = firstName.charAt(0).toUpperCase() + firstName.toLowerCase().slice(1);
 
+    lastName = lastName.trim();
+    lastName = lastName.charAt(0).toUpperCase() + lastName.toLowerCase().slice(1);
+
+    email = email.trim();
 
     if (firstName.length < 3) {
-        alert("Please Enter Your First Name")
+       notification(" Please Enter your Name correctly!", danger);
+        return;
     }
-    if (!emailFormate.test(email)) {
-        alert("Please Enter Email Correctly")
+
+    if (!emailValidation.test(email)) {
+       notification(" Please enter your Email correctly!", danger);
+        return;
     }
+
     if (!dob) {
-        "Please Enter Your Date of Birth"
+       notification(" Please select your Date of Birth!", danger);
+        return;
     }
-    let user = newuser(firstName, lastName, email, dob, "active", "Student")
-    user.push(user)
-    shownotification("A New User has been Added")
-    showTable()
+
+
+    var user = {
+        firstName,
+        lastName,
+        fullName: firstName + ' ' + lastName,
+        email,
+        dob,
+        role: "Student",
+        status: "Active",
+        Id: getRandomId(),
+        Age: ageYear()
+    }
+
+
+    for (let i = 0; i < users.length; i++) {
+        if (user.email == users[i].email) {
+           notification(" This user is already registered", danger);
+            return;
+        }
+    }
+   notification(" A new user has been added successfully", success);
+    users.push(user);
 }
 
-function showTbale() {
-    if (!user.length) {
-        showNotification("There is not A Single User Available")
+function printUsersConsole() {
+    if (!users.length) {
+        returnnotification("Please Add User First", danger);
     }
-    let tableStarting = "<div class=''table-responsive><table class='table table-hover'>"
-    let tableHeadCode = "<thead><tr><th scope='col'>#</th><th scope='col'>First</th><th scope='col'>Last</th><th scope='col'>Handle</th></tr></thead>"
-    let tableEndinfCode = "</table></div>"
-
-    let tableBody = ""
-    for (i = 0; i < users.length; i++) {
-        tableBody += "<tr><th>" + (i + 1) + "</th><td>" + users[i].firstName + "</td><td>" + users[i].lastName + "</td><td>" + users[i].email + "</td><td>" + users[i].dob + "</td></tr>"
-
-
-    }
-    let table = tableStartingCode + tableheadCode + "<tbody>" + tableBody + "</tbody>" + tableEndingCode;
-    output(table)
+   notification(" Users has been printed in the console", success);
+    return console.table(users);
 }
 
-function showImage() {
-    document.getElementById("output").innerHTML = "<img src='https://unsplash.com/s/photos/cars'>"
+function showTable() {
+    if (!users.length) {
+        returnnotification("Please Add User First", danger);
+    }
+    let tableStart = '<div class="table-responsive"><table class="table">';
+    let tableHead = '<thead><tr><th>#</th><th scope = "col">First Name</th><th scope = "col">Last Name</th><th scope = "col">Email</th><th scope = "col">Date of Birth</th><th scope = "col">Age</th></tr></thead>';
+    let tableEnd = '</table></div>';
+    let tableBody = '';
+    for (let i = 0; i < users.length; i++) {
+        tableBody += '<tr><td>' + (i + 1) + '</td><td>' + users[i].firstName + '</td><td>' + users[i].lastName + '</td><td>' + users[i].email + '</td><td>' + users[i].dob + '</td><td>' + users[i].Age + '</td></tr>';
+    }
+    let table = tableStart + tableHead + '<tbody>' + tableBody + '</tbody>' + tableEnd;
+    output(table);
+   notification(" Users has been printed", success);
 }
-
-
-
-
-
-
-
-
-//
